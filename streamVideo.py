@@ -5,6 +5,7 @@ import datetime
 
 app = Flask(__name__)
 
+
 @app.route('/video_feed')
 def video_feed():
     # Open a connection to the Raspberry Pi camera
@@ -28,6 +29,7 @@ def video_feed():
                b'Content-Type: image/jpeg\r\n\r\n' + stream.read() + b'\r\n\r\n')
     # Release the camera
     camera.release()
+
 
 @app.route('/')
 def index():
@@ -53,6 +55,7 @@ def index():
     </html>
     '''
 
+
 @app.route('/save_image')
 def save_image():
     # Open a connection to the Raspberry Pi camera
@@ -68,6 +71,7 @@ def save_image():
     camera.release()
     # Return an empty response
     return Response(status=204)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
