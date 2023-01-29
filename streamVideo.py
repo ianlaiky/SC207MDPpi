@@ -9,14 +9,25 @@ app = Flask(__name__)
 def video_feed():
     # Open a connection to the Raspberry Pi camera
     camera = cv2.VideoCapture(0)
-    # Read a frame from the camera
-    grabbed, frame = camera.read()
-    # Encode the frame as JPEG
-    ret, jpeg = cv2.imencode('.jpg', frame)
+    # Get the video stream as a bytes object
+    stream = io.BytesIO()
+    while True:
+        # Read a frame from the camera
+        grabbed, frame = camera.read()
+        # Break the loop if there are no more frames
+        if not grabbed:
+            break
+        # Encode the frame as JPEG
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        # Write the JPEG data to the stream
+        stream.write(jpeg.tobytes())
+        # Reset the stream to the beginning
+        stream.seek(0)
+        # Return the stream as a response
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + stream.read() + b'\r\n\r\n')
     # Release the camera
     camera.release()
-    # Return the JPEG data as a response
-    return Response(jpeg.tobytes(), mimetype='image/jpeg')
 
 @app.route('/')
 def index():
