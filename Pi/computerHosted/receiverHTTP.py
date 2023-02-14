@@ -4,6 +4,9 @@ import cv2
 
 import os
 
+image_symbols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ' A', ' B', ' Boundary', ' C', ' D', ' E', ' F', ' G',
+                 ' H', ' S', ' T', ' U', ' V', ' W', ' X', ' Y', ' Z', ' down', ' left', ' right', ' stop', ' up']
+
 app = Flask(__name__)
 
 
@@ -19,7 +22,12 @@ def predict():
     # model.predict(source="0.jpg",show=True)
 
     a = model.predict(source="image/image.jpg")
-    print(a[0].boxes.cls)
+    for i in a:
+        print(i.probs)
+        print(i.boxes.cls)
+        print(i.boxes.conf)
+
+
 
 @app.route("/image", methods=["POST"])
 def save_image():
@@ -39,5 +47,6 @@ def save_image():
 def index():
     return 'hello'
 
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=8080, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)
