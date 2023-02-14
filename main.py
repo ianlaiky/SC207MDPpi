@@ -14,7 +14,7 @@ def init():
     verbose = args.verbose
 
     # todo: enable on raspi
-    # os.system("sudo hciconfig hci0 piscan")
+    os.system("sudo hciconfig hci0 piscan")
 
     try:
         multi_thread = MultiProcess(verbose)

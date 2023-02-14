@@ -3,6 +3,7 @@ from src.Logger import Logger
 from src.config import RFCOMM_CHANNEL
 from src.config import UUID
 from src.config import LOCALE
+from src.communicator.utils import *
 
 log = Logger()
 
@@ -18,7 +19,7 @@ class Android:
             log.info('Establishing connection with N7 Tablet')
 
             self.server_sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-            self.server_sock.bind(("", bluetooth.RFCOMM_CHANNEL))
+            self.server_sock.bind(("", RFCOMM_CHANNEL))
             self.server_sock.listen(RFCOMM_CHANNEL)
 
             port = self.server_sock.getsockname()[1]
@@ -41,8 +42,9 @@ class Android:
     def read(self):
         try:
             msg = self.client_sock.recv(1024).decode(LOCALE)
+
             if len(msg) > 0:
-                return msg
+                return setFormat("android", msg)
             return None
         except Exception as error:
             raise
