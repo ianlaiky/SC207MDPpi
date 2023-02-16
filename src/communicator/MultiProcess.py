@@ -79,7 +79,7 @@ class MultiProcess:
                 log.error('Android read failed: ' + str(e))
                 self.android.connect()
 
-    # todo: maybe rewrite this part if doing seperate queues
+
     def write_target(self, msg_queue):
         while True:
             if not msg_queue.empty():
