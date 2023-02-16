@@ -23,6 +23,7 @@ class MultiProcess:
 
         try:
             self.android.connect()
+            self.pc.start()
 
             Process(target=self.read_android, args=(self.msg_queue,)).start()
 

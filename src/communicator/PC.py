@@ -1,7 +1,7 @@
 import socket
 import pickle
-from src.config import WIFI_IP
-from src.config import WIFI_PORT
+from src.config import PC_WIFI_IP
+from src.config import PC_WIFI_PORT
 from src.Logger import Logger
 log = Logger()
 
@@ -11,8 +11,8 @@ class PC:
     Used as the server in the RPi.
     """
     def __init__(self):
-        self.host = WIFI_IP
-        self.port = WIFI_PORT
+        self.host = PC_WIFI_IP
+        self.port = PC_WIFI_PORT
         self.socket = socket.socket()
 
         self.__data = []
@@ -30,9 +30,10 @@ class PC:
 
     def read(self):
         try:
-            msg = self.client_sock.recv(2048).decode().strip()
+            msg = self.conn.recv(2048).decode().strip()
+            # msg = self.conn.recv(1024)
             if len(msg) > 0:
-                return pcMsgParser(msg)
+                return msg
             return None
         except Exception as error:
             log.error('PC read failed: ' + str(error))
