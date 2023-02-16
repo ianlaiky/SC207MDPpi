@@ -33,11 +33,12 @@ class Image:
 
         # Check the status code of the response
         if response.status_code == 200:
-            print("Image sent successfully")
-            return True
+            log.info("Image sent successfully")
+            # print(response.text)
+            return response.text
         else:
-            print("Failed to send image")
-            return False
+            log.info("Failed to send image")
+            return None
 
     # def start_video_feed(self):
     #     # Open a connection to the Raspberry Pi camera

@@ -44,7 +44,7 @@ class Android:
             msg = self.client_sock.recv(1024).decode(LOCALE)
 
             if len(msg) > 0:
-                return setFormat("android", msg)
+                return msg
             return None
         except Exception as error:
             raise

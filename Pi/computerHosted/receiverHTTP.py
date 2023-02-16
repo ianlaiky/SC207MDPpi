@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, request
 from ultralytics import YOLO
 import cv2
@@ -22,11 +24,11 @@ def predict():
     # model.predict(source="0.jpg",show=True)
 
     a = model.predict(source="image/image.jpg")
-    for i in a:
-        print(i.probs)
-        print(i.boxes.cls)
-        print(i.boxes.conf)
-
+    return a
+    # for i in a:
+    #     print(i.probs)
+    #     print(i.boxes.cls)
+    #     print(i.boxes.conf)
 
 
 @app.route("/image", methods=["POST"])
@@ -39,8 +41,22 @@ def save_image():
         f.write(img_data)
 
     # Return a success status code
-    predict()
-    return "Image received and saved", 200
+
+    class_data = []
+    for i in predict():
+        # convert torch.sensor to numpy array
+        temp1 = i.boxes.cls.numpy().tolist()
+        temp2 = i.boxes.conf.numpy().tolist()
+        temp = temp1 + temp2
+        # temp = [i.boxes.cls.numpy().tolist()[0], i.boxes.conf.numpy().tolist()[0]]
+        # print(temp)
+        class_data.append(temp)
+
+    strRep = json.dumps(class_data)
+    print(strRep)
+
+
+    return strRep, 200
 
 
 @app.route('/')

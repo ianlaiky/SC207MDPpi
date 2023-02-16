@@ -22,10 +22,9 @@ class MultiProcess:
         print("MultiProcess start")
 
         try:
-            # self.android.connect()
+            self.android.connect()
 
-            # Process(target=self.read_android, args=(self.msg_queue,)).start()
-
+            Process(target=self.read_android, args=(self.msg_queue,)).start()
 
             Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
             # Process(target=self.read_pc, args=(self.algo_msg_queue,)).start()
@@ -38,15 +37,24 @@ class MultiProcess:
     def end(self):
         print("MultiProcess end")
 
-
-    def read_image_recognition(self,msg_queue):
+    def read_image_recognition(self, msg_queue):
 
         # capture frame
         log.info("image run")
         self.image_rec.capture_frame()
 
         # send to server
-        self.image_rec.send_data()
+
+        if not None:
+            jsondat = self.image_rec.send_data()
+            arrRec = json.loads(jsondat)
+
+            tosend = json.dumps({
+                'target': 6,
+                'payload': arrRec
+            })
+
+            msg_queue.put_nowait(tosend)
 
 
 
@@ -77,11 +85,14 @@ class MultiProcess:
             if not msg_queue.empty():
                 msg = msg_queue.get_nowait()
                 msg = json.loads(msg)
-                payload = msg['data']
 
-                if msg['source'] == 'android':
+                payload = msg['payload']
+
+
+                if msg['target'] == 6:
                     if self.verbose:
-                        log.info('From Android:' + str(payload))
+                        log.info('From Image:' + str(payload))
+                    self.android.write(json.dumps(payload))
 
                 # if msg['source'] == 'PC':
                 #     if self.verbose:
