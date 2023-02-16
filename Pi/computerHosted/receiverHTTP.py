@@ -46,6 +46,8 @@ def save_image():
     for i in predict():
         # convert torch.sensor to numpy array
         temp1 = i.boxes.cls.numpy().tolist()
+        if temp1:
+            temp1 = image_symbols[temp1[0]]
         temp2 = i.boxes.conf.numpy().tolist()
         temp = temp1 + temp2
         # temp = [i.boxes.cls.numpy().tolist()[0], i.boxes.conf.numpy().tolist()[0]]

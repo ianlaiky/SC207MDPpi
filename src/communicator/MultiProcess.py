@@ -42,20 +42,30 @@ class MultiProcess:
 
         # capture frame
         log.info("image run")
-        self.image_rec.capture_frame()
+        occurrence = []
 
-        # send to server
+        for i in range(10):
+            self.image_rec.capture_frame()
 
-        if not None:
-            jsondat = self.image_rec.send_data()
-            arrRec = json.loads(jsondat)
+            # send to server
 
-            tosend = json.dumps({
-                'target': 6,
-                'payload': arrRec
-            })
+            if not None:
+                jsondat = self.image_rec.send_data()
+                arrRec = json.loads(jsondat)
+                log.info("Image confidence full: " + str(arrRec))
+                largest_value = max(arrRec, key=lambda x: x[1])
+                res = largest_value[0]
 
-            msg_queue.put_nowait(tosend)
+                log.info("Largest value: " + str(largest_value))
+                occurrence.append(res)
+        most_occurrence = max(set(occurrence), key=occurrence.count)
+
+        tosend = json.dumps({
+            'target': 6,
+            'payload': "img|"+str(most_occurrence)
+        })
+
+        msg_queue.put_nowait(tosend)
 
 
 
