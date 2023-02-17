@@ -9,7 +9,6 @@ from src.communicator.Image import Image
 from src.communicator.utils import *
 import time
 
-
 log = Logger()
 
 
@@ -22,7 +21,7 @@ class MultiProcess:
         self.arduino = Arduino()
         self.pc = PC()
         self.image_rec = Image()
-
+        self.obstacle_id = None
         self.msg_queue = Queue()
 
     def start(self):
@@ -32,13 +31,13 @@ class MultiProcess:
             # self.arduino.connect()
             # self.arduino.write("RobotMoveUp")
 
-
             # self.android.connect()
             # Process(target=self.read_android, args=(self.msg_queue,)).start()
+
+            #todo: remove this: image recognition is done in write_target
             Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
 
-
-            # self.pc.connect()
+            self.pc.connect()
 
             Process(target=self.write_target, args=(self.msg_queue,)).start()
 
@@ -56,9 +55,7 @@ class MultiProcess:
                     log.info('Read Arduino: ' + str(msg))
                 # msg_queue.put_nowait(format_for('PC', msg))
 
-
-
-    def read_image_recognition(self, msg_queue):
+    def read_image_recognition(self, msg_queue,obstacle_id):
 
         # capture frame
         log.info("image run")
@@ -76,7 +73,6 @@ class MultiProcess:
 
                 arrRec = json.loads(jsondat)
                 if len(arrRec[0]) > 0:
-
                     log.info("Image confidence full: " + str(arrRec))
                     largest_value = max(arrRec, key=lambda x: x[1])
                     res = largest_value[0]
@@ -88,8 +84,8 @@ class MultiProcess:
             most_occurrence = max(set(occurrence), key=occurrence.count)
 
         tosend = json.dumps({
-            'target': 6,
-            'payload': "img|" + str(most_occurrence)
+            'target': 4,
+            'payload': "img|" + str(most_occurrence)+"|"+str(obstacle_id)
         })
 
         msg_queue.put_nowait(tosend)
@@ -129,7 +125,7 @@ class MultiProcess:
                 self.android.connect()
 
     def write_target(self, msg_queue):
-        test = 1
+
         while True:
             if not msg_queue.empty():
                 msg = msg_queue.get_nowait()
@@ -137,51 +133,64 @@ class MultiProcess:
 
                 payload = msg['payload']
 
-
                 if msg['target'] == 1:
                     if self.verbose:
                         log.info('Target Image:' + str(payload))
-
-
-
-                if msg['target'] == 6:
+                        self.obstacle_id = str(payload)
+                    Process(target=self.read_image_recognition, args=(self.msg_queue,self.obstacle_id)).start()
+                if msg['target'] == 2:
                     if self.verbose:
-                        log.info('From Image:' + str(payload))
-                    # todo: comment this in
-                    # self.android.write(json.dumps(payload))
+                        log.info('Target Algo:' + str(payload))
 
 
-                # image and stm checking if its their turn
-                if msg['target'] == 9:
+                        # todo: change this
+                        self.sendtoPc = [[105, 75, 180, 0], [135, 25, 0, 1], [195, 95, 180, 2], [175, 185, -90, 3], [75, 125, 90, 4], [15, 185, -90, 5]]
+                    self.sendtoPc = payload
+                    # self.sendtoPc = json.dumps(payload)
+
+                    # process with 2 args, msg_queue and payload
+                    Process(target=self.read_write_pc, args=(self.sendtoPc, msg_queue)).start()
+
+
+
+                if msg['target'] == 4:
                     if self.verbose:
-                        log.info('Process From Algo:' + str(payload))
+                        log.info('Target Android:' + str(payload))
+                    self.android.write(str(payload))
+                if msg['target'] == 8:
+                    if self.verbose:
+                        log.info('Target Arduino:' + str(payload))
+                    self.arduino.write(str(payload))
+
+                # ALgo and android target
+                # if msg['target'] == 6:
+                #     if self.verbose:
+                #         log.info('From Image:' + str(payload))
+                #     # todo: comment this in
+                #     # self.android.write(json.dumps(payload))
+                #
+                # # image and stm checking if its their turn
+                # if msg['target'] == 9:
+                #     if self.verbose:
+                #         log.info('Process From Algo:' + str(payload))
 
 
-            #     # if msg['target'] == 2:
-            # if test ==1:
-            #     test = 0
-            #     # if self.verbose:
-            #         # log.info('From Android:' + str(payload))
-            #     # self.pc.write(json.dumps(payload))
-            #
-            #     # todo: change this
-            #     self.sendtoPc = [[105, 75, 180, 0], [135, 25, 0, 1], [195, 95, 180, 2], [175, 185, -90, 3], [75, 125, 90, 4], [15, 185, -90, 5]]
-            #     # self.sendtoPc = json.dumps(payload)
-            #
-            #     # process with 2 args, msg_queue and payload
-            #     Process(target=self.read_write_pc, args=(self.sendtoPc, msg_queue)).start()
-            #
-            #         # Process(target=self.read_pc, args=(json.dumps(payload),)).start()
 
 
-
-    def read_write_pc(self, data,msg_queue):
+    def read_write_pc(self, data, msg_queue):
         while True:
             msg = self.pc.send_receive_data(data)
             if msg is not None:
                 if self.verbose:
                     log.info('Read PC: ' + str(msg))
-                msg_queue.put_nowait(setFormat('9', msg))
+
+                data = list(msg)
+                for i in data:
+                    splitted = i.split(',')
+                    if splitted[0] == 's':
+                        msg_queue.put_nowait(setFormat('1', splitted[1]))
+                    else:
+                        msg_queue.put_nowait(setFormat('8', i))
 
                 # check if first 2 letters of string starts with sc
 

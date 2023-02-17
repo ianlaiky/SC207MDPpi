@@ -50,7 +50,7 @@ class Arduino:
 
     def write(self, msg):
         try:
-            self.connection.write(str.encode("Hello"))
+            self.connection.write(str.encode(msg))
             # log.info('Successfully wrote message to Arduino')
         except Exception as error:
             log.error('Arduino write failed: ' + str(error))

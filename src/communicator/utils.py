@@ -12,7 +12,7 @@ log = Logger()
 # Example:
 # To Algo and Android: 2 + 4 = 6
 
-
+arduino_out = ['SD', 'MC', 'CC', 'EC']
 def ardMsgParser(msg):
     data = msg.split('|')
     if data[0] in arduino_out:
