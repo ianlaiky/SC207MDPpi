@@ -2,7 +2,10 @@ import socket
 import pickle
 from src.config import PC_WIFI_IP
 from src.config import PC_WIFI_PORT
+from src.config import LOCALE
 from src.Logger import Logger
+
+
 log = Logger()
 
 
@@ -12,7 +15,7 @@ class PC:
     """
     def __init__(self):
         self.host = PC_WIFI_IP
-        self.port = PC_WIFI_PORT
+        self.port = int(PC_WIFI_PORT)
         self.socket = socket.socket()
 
         self.__data = []
@@ -54,6 +57,12 @@ class PC:
     #     # This may allow arbitrary code execution. Only connect to trusted connections!!!
     #     return pickle.loads(b''.join(self.__data))
 
+    def write(self, msg):
+        try:
+            self.conn.sendto(bytes(msg + '\n', LOCALE), self.address)
+            # log.info('Successfully wrote message to PC')
+        except Exception as error:
+            log.error('PC write failed: ' + str(error))
 
     def close(self):
         print("Closing socket.")

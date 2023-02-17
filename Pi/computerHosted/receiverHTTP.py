@@ -36,6 +36,7 @@ def save_image():
     # Get the binary data of the image from the request
     img_data = request.data
 
+
     # Save the image to a directory
     with open("image/image.jpg", "wb") as f:
         f.write(img_data)
@@ -46,9 +47,12 @@ def save_image():
     for i in predict():
         # convert torch.sensor to numpy array
         temp1 = i.boxes.cls.numpy().tolist()
+
         if temp1:
-            temp1 = image_symbols[temp1[0]]
-        temp2 = i.boxes.conf.numpy().tolist()
+
+            temp1 = list(image_symbols[int(temp1[0])])
+        temp2 = list(i.boxes.conf.numpy().tolist())
+        print(temp2)
         temp = temp1 + temp2
         # temp = [i.boxes.cls.numpy().tolist()[0], i.boxes.conf.numpy().tolist()[0]]
         # print(temp)

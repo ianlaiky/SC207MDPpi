@@ -12,8 +12,10 @@ log = Logger()
 class Image:
     def __init__(self):
         # start video stream
-        self.camera = cv2.VideoCapture(0)
-        self.stream = io.BytesIO()
+        log.info("Starting video feed")
+
+        self.camera = None
+        self.stream = None
 
     def send_data(self):
         # URL of the endpoint to send the image to
@@ -49,9 +51,14 @@ class Image:
     #     self.stream = stream
 
     def capture_frame(self):
+        self.camera = cv2.VideoCapture(0)
+        self.stream = io.BytesIO()
+
         while True:
+
             # Read a frame from the camera
             grabbed, frame = self.camera.read()
+            # print(frame)
             # Break the loop if there are no more frames
             if not grabbed:
                 break
@@ -59,11 +66,11 @@ class Image:
             ret, jpeg = cv2.imencode('.jpg', frame)
             # Write the JPEG data to the stream
             self.stream.write(jpeg.tobytes())
+
             # Reset the stream to the beginning
             self.stream.seek(0)
             # Return the stream as a response
             # return self.stream.read()
-
 
             # return_val = send_data(stream.read())
 
@@ -71,7 +78,6 @@ class Image:
             #     break
             # yield (b'--frame\r\n'
             #        b'Content-Type: image/jpeg\r\n\r\n' + stream.read() + b'\r\n\r\n')
-
 
             # Release the camera
             self.camera.release()

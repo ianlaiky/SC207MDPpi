@@ -3,17 +3,23 @@ from src.Logger import Logger
 from src.communicator.Android import Android
 from multiprocessing import Process, Queue
 from src.communicator.PC import PC
+from src.communicator.Arduino import Arduino
+from src.communicator.rpi_main import PC
 from src.communicator.Image import Image
-from utils import *
+from src.communicator.utils import *
+import time
+
 
 log = Logger()
 
 
 class MultiProcess:
     def __init__(self, verbose):
+        self.sendtoPc = None
         log.info('Initializing Multiprocessing Communication')
         self.verbose = verbose
         self.android = Android()
+        self.arduino = Arduino()
         self.pc = PC()
         self.image_rec = Image()
 
@@ -23,13 +29,16 @@ class MultiProcess:
         print("MultiProcess start")
 
         try:
-            self.android.connect()
-            self.pc.start()
+            # self.arduino.connect()
+            # self.arduino.write("RobotMoveUp")
 
-            Process(target=self.read_android, args=(self.msg_queue,)).start()
 
+            # self.android.connect()
+            # Process(target=self.read_android, args=(self.msg_queue,)).start()
             Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
-            Process(target=self.read_pc, args=(self.msg_queue,)).start()
+
+
+            # self.pc.connect()
 
             Process(target=self.write_target, args=(self.msg_queue,)).start()
 
@@ -39,48 +48,63 @@ class MultiProcess:
     def end(self):
         print("MultiProcess end")
 
+    def read_arduino(self, msg_queue):
+        while True:
+            msg = self.arduino.read()
+            if msg is not None and msg != "Connected":
+                if self.verbose:
+                    log.info('Read Arduino: ' + str(msg))
+                # msg_queue.put_nowait(format_for('PC', msg))
+
+
+
     def read_image_recognition(self, msg_queue):
 
         # capture frame
         log.info("image run")
         occurrence = []
+        most_occurrence = None
 
         for i in range(10):
             self.image_rec.capture_frame()
 
             # send to server
+            jsondat = self.image_rec.send_data()
+            # log.info("jsondat: " + str(jsondat))
+            print(jsondat)
+            if jsondat is not None:
 
-            if not None:
-                jsondat = self.image_rec.send_data()
                 arrRec = json.loads(jsondat)
-                log.info("Image confidence full: " + str(arrRec))
-                largest_value = max(arrRec, key=lambda x: x[1])
-                res = largest_value[0]
+                if len(arrRec[0]) > 0:
 
-                log.info("Largest value: " + str(largest_value))
-                occurrence.append(res)
-        most_occurrence = max(set(occurrence), key=occurrence.count)
+                    log.info("Image confidence full: " + str(arrRec))
+                    largest_value = max(arrRec, key=lambda x: x[1])
+                    res = largest_value[0]
+
+                    log.info("Largest value: " + str(largest_value))
+                    occurrence.append(res)
+            # time.sleep(1)
+        if occurrence:
+            most_occurrence = max(set(occurrence), key=occurrence.count)
 
         tosend = json.dumps({
             'target': 6,
-            'payload': "img|"+str(most_occurrence)
+            'payload': "img|" + str(most_occurrence)
         })
 
         msg_queue.put_nowait(tosend)
-
-
 
     def read_android(self, msg_queue):
         while True:
 
             try:
-                msg = self.android.read()
+                msg = self.android.read().strip()
                 log.info(msg)
                 if msg is not None:
                     if self.verbose:
                         log.info('Read Android: ' + str(msg))
                     # todo: modify this
-                    if msg in ['robotup','robotdown']:
+                    if msg in ['RobotMoveUp', 'RobotMoveLeft', 'RobotMoveDown', 'RobotMoveRight']:
                         tosend = json.dumps({
                             'target': 8,
                             'payload': msg
@@ -104,8 +128,8 @@ class MultiProcess:
                 log.error('Android read failed: ' + str(e))
                 self.android.connect()
 
-
     def write_target(self, msg_queue):
+        test = 1
         while True:
             if not msg_queue.empty():
                 msg = msg_queue.get_nowait()
@@ -113,41 +137,51 @@ class MultiProcess:
 
                 payload = msg['payload']
 
-
                 if msg['target'] == 6:
                     if self.verbose:
                         log.info('From Image:' + str(payload))
-                    self.android.write(json.dumps(payload))
+                    # todo: comment this in
+                    # self.android.write(json.dumps(payload))
 
-                # if msg['source'] == 'PC':
-                #     if self.verbose:
-                #         log.info('Write PC:' + str(payload))
-                #     self.pc.write(payload)
-                #
-                # elif msg['target'] == 'AND':
-                #     if self.verbose:
-                #         log.info('Write Android:' + str(payload))
-                #     self.android.write(payload)
-                #
-                # elif msg['target'] == 'ARD':
-                #     if self.verbose:
-                #         log.info('Write Arduino:' + str(payload))
-                #     self.arduino.write(payload)
 
-    def read_pc(self, msg_queue):
+                # image and stm checking if its their turn
+                if msg['target'] == 9:
+                    if self.verbose:
+                        log.info('Process From Algo:' + str(payload))
+
+
+            #     # if msg['target'] == 2:
+            # if test ==1:
+            #     test = 0
+            #     # if self.verbose:
+            #         # log.info('From Android:' + str(payload))
+            #     # self.pc.write(json.dumps(payload))
+            #
+            #     # todo: change this
+            #     self.sendtoPc = [[105, 75, 180, 0], [135, 25, 0, 1], [195, 95, 180, 2], [175, 185, -90, 3], [75, 125, 90, 4], [15, 185, -90, 5]]
+            #     # self.sendtoPc = json.dumps(payload)
+            #
+            #     # process with 2 args, msg_queue and payload
+            #     Process(target=self.read_write_pc, args=(self.sendtoPc, msg_queue)).start()
+            #
+            #         # Process(target=self.read_pc, args=(json.dumps(payload),)).start()
+
+
+
+    def read_write_pc(self, data,msg_queue):
         while True:
-            msg = self.pc.read()
+            msg = self.pc.send_receive_data(data)
             if msg is not None:
                 if self.verbose:
-                    log.info('Read PC: ' + str(msg['target']) + '; ' + str(msg['payload']))
+                    log.info('Read PC: ' + str(msg))
+                msg_queue.put_nowait(setFormat('9', msg))
 
                 # check if first 2 letters of string starts with sc
 
-
-                if msg[:2] == 'sc':
-                    msg_queue.put_nowait(setFormat('1',msg))
-                else:
-                    msg_queue.put_nowait(setFormat('8',msg))
+                # if msg[:2] == 'sc':
+                #     msg_queue.put_nowait(setFormat('1', msg))
+                # else:
+                #     msg_queue.put_nowait(setFormat('8', msg))
 
                 # if msg['target'] == 'android':
                 #     msg_queue.put_nowait(format_for('AND', msg['payload']))

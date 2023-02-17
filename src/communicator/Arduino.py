@@ -8,6 +8,7 @@ from src.communicator.utils import ardMsgParser
 
 log = Logger()
 
+
 # Arduino will need an accompanying script to receive the data from Rpi
 # Communication has to be two ways, Rpi send, Arduino receive and reply, Rpi receive
 
@@ -46,10 +47,10 @@ class Arduino:
             log.info('Successfully closed connection with Arduino')
         except Exception as error:
             log.error('Arduino close connection failed: ' + str(error))
-    
+
     def write(self, msg):
         try:
-            self.connection.write(str.encode(msg))
+            self.connection.write(str.encode("Hello"))
             # log.info('Successfully wrote message to Arduino')
         except Exception as error:
             log.error('Arduino write failed: ' + str(error))
@@ -59,6 +60,6 @@ class Arduino:
             msg = self.connection.readline().strip().decode(LOCALE)
             if len(msg) > 0:
                 return ardMsgParser(msg)
-            return None          
+            return None
         except Exception as error:
             log.error('Arduino read failed: ' + str(error))

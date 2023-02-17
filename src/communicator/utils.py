@@ -13,11 +13,16 @@ log = Logger()
 # To Algo and Android: 2 + 4 = 6
 
 
+def ardMsgParser(msg):
+    data = msg.split('|')
+    if data[0] in arduino_out:
+        return msg
+    else:
+        return None
 
-
-def setFormat(source, msg):
+def setFormat(target, msg):
     return json.dumps({
-        'target': source,
+        'target': target,
         'payload': msg
 
     })
