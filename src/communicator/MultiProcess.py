@@ -137,6 +137,13 @@ class MultiProcess:
 
                 payload = msg['payload']
 
+
+                if msg['target'] == 1:
+                    if self.verbose:
+                        log.info('Target Image:' + str(payload))
+
+
+
                 if msg['target'] == 6:
                     if self.verbose:
                         log.info('From Image:' + str(payload))
