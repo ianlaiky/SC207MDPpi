@@ -39,20 +39,20 @@ class PC:
             log.error('PC read failed: ' + str(error))
 
 
-    def receive_data(self):
-        assert self.conn is not None and self.address is not None
-        with self.conn:
-            print(f"Connection from {self.address}")
-            while True:
-
-                print("s")
-                d = self.conn.recv(1024)
-                if not d:
-                    break
-                self.__data.append(d)
-
-        # This may allow arbitrary code execution. Only connect to trusted connections!!!
-        return pickle.loads(b''.join(self.__data))
+    # def receive_data(self):
+    #     assert self.conn is not None and self.address is not None
+    #     with self.conn:
+    #         print(f"Connection from {self.address}")
+    #         while True:
+    #
+    #             print("s")
+    #             d = self.conn.recv(1024)
+    #             if not d:
+    #                 break
+    #             self.__data.append(d)
+    #
+    #     # This may allow arbitrary code execution. Only connect to trusted connections!!!
+    #     return pickle.loads(b''.join(self.__data))
 
 
     def close(self):

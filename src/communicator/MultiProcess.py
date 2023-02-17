@@ -4,6 +4,7 @@ from src.communicator.Android import Android
 from multiprocessing import Process, Queue
 from src.communicator.PC import PC
 from src.communicator.Image import Image
+from utils import *
 
 log = Logger()
 
@@ -28,7 +29,7 @@ class MultiProcess:
             Process(target=self.read_android, args=(self.msg_queue,)).start()
 
             Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
-            # Process(target=self.read_pc, args=(self.algo_msg_queue,)).start()
+            Process(target=self.read_pc, args=(self.msg_queue,)).start()
 
             Process(target=self.write_target, args=(self.msg_queue,)).start()
 
@@ -78,8 +79,21 @@ class MultiProcess:
                 if msg is not None:
                     if self.verbose:
                         log.info('Read Android: ' + str(msg))
+                    # todo: modify this
+                    if msg in ['robotup','robotdown']:
+                        tosend = json.dumps({
+                            'target': 8,
+                            'payload': msg
+                        })
 
-                    msg_queue.put_nowait(str(msg))
+                        msg_queue.put_nowait(str(tosend))
+                    else:
+                        tosend = json.dumps({
+                            'target': 2,
+                            'payload': msg
+                        })
+
+                        msg_queue.put_nowait(str(tosend))
 
                     # if msg in ['w1', 'a', 'd', 'h']:
                     #     msg_queue.put_nowait(format_for('ARD', msg))
@@ -127,7 +141,13 @@ class MultiProcess:
                 if self.verbose:
                     log.info('Read PC: ' + str(msg['target']) + '; ' + str(msg['payload']))
 
-                    msg_queue.put_nowait(msg)
+                # check if first 2 letters of string starts with sc
+
+
+                if msg[:2] == 'sc':
+                    msg_queue.put_nowait(setFormat('1',msg))
+                else:
+                    msg_queue.put_nowait(setFormat('8',msg))
 
                 # if msg['target'] == 'android':
                 #     msg_queue.put_nowait(format_for('AND', msg['payload']))

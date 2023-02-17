@@ -17,7 +17,7 @@ log = Logger()
 
 def setFormat(source, msg):
     return json.dumps({
-        'source': source,
-        'data': msg
+        'target': source,
+        'payload': msg
 
     })
