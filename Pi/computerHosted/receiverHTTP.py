@@ -23,7 +23,7 @@ def predict():
 
     # model.predict(source="0.jpg",show=True)
 
-    a = model.predict(source="image/image.jpg")
+    a = model.predict(source="image/image.jpg", save=True)
     return a
     # for i in a:
     #     print(i.probs)
@@ -35,7 +35,6 @@ def predict():
 def save_image():
     # Get the binary data of the image from the request
     img_data = request.data
-
 
     # Save the image to a directory
     with open("image/image.jpg", "wb") as f:
@@ -49,7 +48,6 @@ def save_image():
         temp1 = i.boxes.cls.numpy().tolist()
 
         if temp1:
-
             temp1 = list(image_symbols[int(temp1[0])])
         temp2 = list(i.boxes.conf.numpy().tolist())
         print(temp2)
@@ -60,7 +58,6 @@ def save_image():
 
     strRep = json.dumps(class_data)
     print(strRep)
-
 
     return strRep, 200
 
