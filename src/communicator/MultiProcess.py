@@ -34,8 +34,9 @@ class MultiProcess:
             # self.android.connect()
             # Process(target=self.read_android, args=(self.msg_queue,)).start()
 
-            #todo: remove this: image recognition is done in write_target
-            Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
+            # todo: remove this: image recognition is done in write_target
+
+            # Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
 
             self.pc.connect()
 
@@ -55,7 +56,7 @@ class MultiProcess:
                     log.info('Read Arduino: ' + str(msg))
                 # msg_queue.put_nowait(format_for('PC', msg))
 
-    def read_image_recognition(self, msg_queue,obstacle_id):
+    def read_image_recognition(self, obstacle_id):
 
         # capture frame
         log.info("image run")
@@ -83,12 +84,15 @@ class MultiProcess:
         if occurrence:
             most_occurrence = max(set(occurrence), key=occurrence.count)
 
-        tosend = json.dumps({
-            'target': 4,
-            'payload': "img|" + str(most_occurrence)+"|"+str(obstacle_id)
-        })
+        # tosend = json.dumps({
+        #     'target': 4,
+        #     'payload': "img|" + str(most_occurrence)+"|"+str(obstacle_id)
+        # })
+        tosend = "img|" + str(most_occurrence) + "|" + str(obstacle_id)
+        # change to sync with stm
+        return tosend
 
-        msg_queue.put_nowait(tosend)
+        # msg_queue.put_nowait(tosend)
 
     def read_android(self, msg_queue):
         while True:
@@ -137,21 +141,25 @@ class MultiProcess:
                     if self.verbose:
                         log.info('Target Image:' + str(payload))
                         self.obstacle_id = str(payload)
-                    Process(target=self.read_image_recognition, args=(self.msg_queue,self.obstacle_id)).start()
+
+                    # Process(target=self.read_image_recognition, args=(self.msg_queue,self.obstacle_id)).start()
+                    imagedata = self.read_image_recognition(self.obstacle_id)
+
+                    # send to android
+                    self.android.write(str(imagedata))
+
                 if msg['target'] == 2:
                     if self.verbose:
                         log.info('Target Algo:' + str(payload))
 
-
                         # todo: change this
-                        self.sendtoPc = [[105, 75, 180, 0], [135, 25, 0, 1], [195, 95, 180, 2], [175, 185, -90, 3], [75, 125, 90, 4], [15, 185, -90, 5]]
+                        self.sendtoPc = [[105, 75, 180, 0], [135, 25, 0, 1], [195, 95, 180, 2], [175, 185, -90, 3],
+                                         [75, 125, 90, 4], [15, 185, -90, 5]]
                     self.sendtoPc = payload
                     # self.sendtoPc = json.dumps(payload)
 
                     # process with 2 args, msg_queue and payload
                     Process(target=self.read_write_pc, args=(self.sendtoPc, msg_queue)).start()
-
-
 
                 if msg['target'] == 4:
                     if self.verbose:
@@ -173,9 +181,6 @@ class MultiProcess:
                 # if msg['target'] == 9:
                 #     if self.verbose:
                 #         log.info('Process From Algo:' + str(payload))
-
-
-
 
     def read_write_pc(self, data, msg_queue):
         while True:
