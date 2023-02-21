@@ -6,6 +6,7 @@ class RPiServer:
     """
     Used as the server in the RPi.
     """
+
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -16,6 +17,7 @@ class RPiServer:
 
     def start(self):
         print(f"Creating server at {self.host}:{self.port}")
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.host, self.port))
         self.socket.listen()
         print("Listening for connection...")
@@ -37,7 +39,6 @@ class RPiServer:
 
         # This may allow arbitrary code execution. Only connect to trusted connections!!!
         return pickle.loads(b''.join(self.__data))
-
 
     def close(self):
         print("Closing socket.")

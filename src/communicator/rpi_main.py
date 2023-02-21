@@ -14,7 +14,26 @@ class PC:
         self.client = None
 
     def connect(self):
+        log.info("thread started")
 
+        # # Create a server for the PC to connect to
+        # server = RPiServer("192.168.29.1", 4161)
+        # self.server = server
+        # # Wait for the PC to connect to the RPi.
+        # log.info("Waiting for connection from PC...")
+        # try:
+        #     self.server.start()
+        #     log.info("Connection from PC established!\n")
+        #
+        # except Exception as e:
+        #     log.info(e)
+        #     self.server.close()
+        #     return False
+        # log.info("Connection from PC established!\n")
+        # self.server.close()
+
+
+    def send_receive_data(self, data):
         # Create a server for the PC to connect to
         server = RPiServer("192.168.29.1", 4161)
         self.server = server
@@ -28,7 +47,9 @@ class PC:
             log.info(e)
             self.server.close()
             return False
-        # log.info("Connection from PC established!\n")
+       
+
+        # above new
 
         # Then, we use this to connect to the PC's server.
         host = self.server.address[0]
@@ -42,8 +63,6 @@ class PC:
 
         # Wait to connect to RPi.
         log.info(f"Attempting connection to PC at {host}:{8000}")
-
-    def send_receive_data(self, data):
         while True:
             try:
                 self.client.connect()
@@ -55,6 +74,10 @@ class PC:
                 self.server.close()
                 self.client.close()
 
+
+
+
+        # above is new
         log.info("Connected to PC!\n")
 
         # Send over the obstacle data to the PC.

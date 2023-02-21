@@ -14,11 +14,11 @@ log = Logger()
 
 arduino_out = ['SD', 'MC', 'CC', 'EC']
 def ardMsgParser(msg):
-    data = msg.split('|')
-    if data[0] in arduino_out:
-        return msg
-    else:
-        return None
+    # data = msg.split('|')
+    # if data[0] in arduino_out:
+    return msg
+    # else:
+        #return None
 
 def setFormat(target, msg):
     return json.dumps({

@@ -7,6 +7,7 @@ from src.communicator.Arduino import Arduino
 from src.communicator.rpi_main import PC
 from src.communicator.Image import Image
 from src.communicator.utils import *
+import ast
 import time
 
 log = Logger()
@@ -28,19 +29,26 @@ class MultiProcess:
         print("MultiProcess start")
 
         try:
-            # self.arduino.connect()
-            # self.arduino.write("RobotMoveUp")
+            self.arduino.connect()
+            #
+            Process(target=self.read_arduino, args=(self.msg_queue,)).start()
+            #
+            # while(1):
+            #     print("sfd")
+            #     self.arduino.write("t,0xa5")
+            #     input()
 
-            # self.android.connect()
-            # Process(target=self.read_android, args=(self.msg_queue,)).start()
+            self.android.connect()
+            Process(target=self.read_android, args=(self.msg_queue,)).start()
 
-            # todo: remove this: image recognition is done in write_target
+            # Not to be run here, for testing only
+            #     Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
 
-            # Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
+            self.android.write(str("TARGET-1-10"))
+            # self.pc.connect()
+            #
+            # Process(target=self.write_target, args=(self.msg_queue,)).start()
 
-            self.pc.connect()
-
-            Process(target=self.write_target, args=(self.msg_queue,)).start()
 
         except KeyboardInterrupt:
             raise
@@ -54,7 +62,8 @@ class MultiProcess:
             if msg is not None and msg != "Connected":
                 if self.verbose:
                     log.info('Read Arduino: ' + str(msg))
-                # msg_queue.put_nowait(format_for('PC', msg))
+        # todo: image recognition is done in write_target
+        # msg_queue.put_nowait(format_for('PC', msg))
 
     def read_image_recognition(self, obstacle_id):
 
@@ -99,12 +108,14 @@ class MultiProcess:
 
             try:
                 msg = self.android.read().strip()
-                log.info(msg)
+                # log.info(msg)
                 if msg is not None:
                     if self.verbose:
                         log.info('Read Android: ' + str(msg))
+                        # log.info('Read Android: ' + str(type(msg)))
+                        # log.info('Read Android: ' + str(list(msg)))
                     # todo: modify this
-                    if msg in ['RobotMoveUp', 'RobotMoveLeft', 'RobotMoveDown', 'RobotMoveRight']:
+                    if msg in ['f040', 'b040', 't090', 'u090', 'g090', 'j090']:
                         tosend = json.dumps({
                             'target': 8,
                             'payload': msg
@@ -114,7 +125,7 @@ class MultiProcess:
                     else:
                         tosend = json.dumps({
                             'target': 2,
-                            'payload': msg
+                            'payload': ast.literal_eval(msg)
                         })
 
                         msg_queue.put_nowait(str(tosend))
@@ -147,14 +158,13 @@ class MultiProcess:
 
                     # send to android
                     self.android.write(str(imagedata))
-
                 if msg['target'] == 2:
                     if self.verbose:
                         log.info('Target Algo:' + str(payload))
 
                         # todo: change this
-                        self.sendtoPc = [[105, 75, 180, 0], [135, 25, 0, 1], [195, 95, 180, 2], [175, 185, -90, 3],
-                                         [75, 125, 90, 4], [15, 185, -90, 5]]
+                        # self.sendtoPc = [[105, 75, 180, 0], [135, 25, 0, 1], [195, 95, 180, 2], [175, 185, -90, 3],
+                        #                  [75, 125, 90, 4], [15, 185, -90, 5]]
                     self.sendtoPc = payload
                     # self.sendtoPc = json.dumps(payload)
 
@@ -183,33 +193,36 @@ class MultiProcess:
                 #         log.info('Process From Algo:' + str(payload))
 
     def read_write_pc(self, data, msg_queue):
-        while True:
-            msg = self.pc.send_receive_data(data)
-            if msg is not None:
-                if self.verbose:
-                    log.info('Read PC: ' + str(msg))
+        # while True:
+        msg = self.pc.send_receive_data(data)
+        if msg is not None:
+            if self.verbose:
+                log.info('Read PC: ' + str(msg))
 
-                data = list(msg)
-                for i in data:
-                    splitted = i.split(',')
-                    if splitted[0] == 's':
-                        msg_queue.put_nowait(setFormat('1', splitted[1]))
-                    else:
-                        msg_queue.put_nowait(setFormat('8', i))
+            data_recevied = list(msg)
+            for i in data_recevied:
+                log.info("Pc line by line " + str(i))
 
-                # check if first 2 letters of string starts with sc
-
-                # if msg[:2] == 'sc':
-                #     msg_queue.put_nowait(setFormat('1', msg))
+                # if i[0] == 's':
+                #     splitted = i.split(',')
+                #     msg_queue.put_nowait(setFormat('1', splitted[1]))
                 # else:
-                #     msg_queue.put_nowait(setFormat('8', msg))
+                #     log.info(setFormat('8', i))
+                # msg_queue.put_nowait(setFormat('8', i))
 
-                # if msg['target'] == 'android':
-                #     msg_queue.put_nowait(format_for('AND', msg['payload']))
-                # elif msg['target'] == 'arduino':
-                #     msg_queue.put_nowait(format_for('ARD', msg['payload']))
-                # elif msg['target'] == 'rpi':
-                #     img_queue.put_nowait(msg['payload'])
-                # elif msg['target'] == 'both':
-                #     msg_queue.put_nowait(format_for('AND', msg['payload']['android']))
-                #     msg_queue.put_nowait(format_for('ARD', msg['payload']['arduino']))
+            # check if first 2 letters of string starts with sc
+
+            # if msg[:2] == 'sc':
+            #     msg_queue.put_nowait(setFormat('1', msg))
+            # else:
+            #     msg_queue.put_nowait(setFormat('8', msg))
+
+            # if msg['target'] == 'android':
+            #     msg_queue.put_nowait(format_for('AND', msg['payload']))
+            # elif msg['target'] == 'arduino':
+            #     msg_queue.put_nowait(format_for('ARD', msg['payload']))
+            # elif msg['target'] == 'rpi':
+            #     img_queue.put_nowait(msg['payload'])
+            # elif msg['target'] == 'both':
+            #     msg_queue.put_nowait(format_for('AND', msg['payload']['android']))
+            #     msg_queue.put_nowait(format_for('ARD', msg['payload']['arduino']))
