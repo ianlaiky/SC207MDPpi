@@ -2,7 +2,7 @@ import json
 from src.Logger import Logger
 from src.communicator.Android import Android
 from multiprocessing import Process, Queue
-from src.communicator.PC import PC
+# from src.communicator.PC import PC
 from src.communicator.Arduino import Arduino
 from src.communicator.rpi_main import PC
 from src.communicator.Image import Image
@@ -32,22 +32,26 @@ class MultiProcess:
             self.arduino.connect()
             #
             Process(target=self.read_arduino, args=(self.msg_queue,)).start()
+            self.msg_queue.put_nowait(setFormat("8", "t090"))
+            self.msg_queue.put_nowait(setFormat("8", "t090"))
+            self.msg_queue.put_nowait(setFormat("8", "t090"))
+            self.msg_queue.put_nowait(setFormat("8", "t090"))
             #
             # while(1):
             #     print("sfd")
             #     self.arduino.write("t,0xa5")
             #     input()
 
-            self.android.connect()
-            Process(target=self.read_android, args=(self.msg_queue,)).start()
+            # self.android.connect()
+            # Process(target=self.read_android, args=(self.msg_queue,)).start()
 
             # Not to be run here, for testing only
             #     Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
 
-            self.android.write(str("TARGET-1-10"))
+            # todo: set connect for init of connection
             # self.pc.connect()
             #
-            # Process(target=self.write_target, args=(self.msg_queue,)).start()
+            Process(target=self.write_target, args=(self.msg_queue,)).start()
 
 
         except KeyboardInterrupt:
