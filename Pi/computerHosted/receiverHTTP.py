@@ -50,16 +50,13 @@ def save_image():
     for i in predict():
         # convert torch.sensor to numpy array
         temp1 = i.boxes.cls.numpy().tolist()
-        print("temp1")
-        print(temp1)
-        if temp1:
-            temp1 = [image_symbols[int(temp1[0])]]
         temp2 = list(i.boxes.conf.numpy().tolist())
-        print(temp2)
-        temp = temp1 + temp2
-        # temp = [i.boxes.cls.numpy().tolist()[0], i.boxes.conf.numpy().tolist()[0]]
-        # print(temp)
-        class_data.append(temp)
+
+        for index, i in enumerate(temp1):
+            temp11 = []
+            temp11.append(image_symbols[int(i)])
+            temp11.append(temp2[index])
+            class_data.append(temp11)
 
     strRep = json.dumps(class_data)
     print(strRep)
