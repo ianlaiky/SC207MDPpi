@@ -33,6 +33,12 @@ class MultiProcess:
             #
             Process(target=self.read_arduino, args=(self.msg_queue,)).start()
             self.msg_queue.put_nowait(setFormat(8, "t090"))
+
+
+            self.msg_queue.put_nowait(setFormat(1, "1"))
+
+
+
             self.msg_queue.put_nowait(setFormat(8, "t090"))
             self.msg_queue.put_nowait(setFormat(8, "t090"))
             self.msg_queue.put_nowait(setFormat(8, "t090"))
@@ -42,8 +48,8 @@ class MultiProcess:
             #     self.arduino.write("t,0xa5")
             #     input()
 
-            # self.android.connect()
-            # Process(target=self.read_android, args=(self.msg_queue,)).start()
+            self.android.connect()
+            Process(target=self.read_android, args=(self.msg_queue,)).start()
 
             # Not to be run here, for testing only
             #     Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
