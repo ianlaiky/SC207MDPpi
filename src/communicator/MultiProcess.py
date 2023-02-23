@@ -32,10 +32,10 @@ class MultiProcess:
             self.arduino.connect()
             #
             Process(target=self.read_arduino, args=(self.msg_queue,)).start()
-            self.msg_queue.put_nowait(setFormat("8", "t090"))
-            self.msg_queue.put_nowait(setFormat("8", "t090"))
-            self.msg_queue.put_nowait(setFormat("8", "t090"))
-            self.msg_queue.put_nowait(setFormat("8", "t090"))
+            self.msg_queue.put_nowait(setFormat(8, "t090"))
+            self.msg_queue.put_nowait(setFormat(8, "t090"))
+            self.msg_queue.put_nowait(setFormat(8, "t090"))
+            self.msg_queue.put_nowait(setFormat(8, "t090"))
             #
             # while(1):
             #     print("sfd")
