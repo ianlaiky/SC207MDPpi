@@ -57,6 +57,8 @@ def save_image():
             temp11.append(image_symbols[int(i)])
             temp11.append(temp2[index])
             class_data.append(temp11)
+    if len(class_data) == 0:
+        class_data.append([])
 
     strRep = json.dumps(class_data)
     print(strRep)
