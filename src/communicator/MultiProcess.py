@@ -30,34 +30,55 @@ class MultiProcess:
 
         try:
             self.arduino.connect()
-            #
+            # self.pc.connect()
+            self.android.connect()
+            Process(target=self.read_android, args=(self.msg_queue,)).start()
             Process(target=self.read_arduino, args=(self.msg_queue,)).start()
-            self.msg_queue.put_nowait(setFormat(8, "t090"))
+            Process(target=self.write_target, args=(self.msg_queue,)).start()
 
+            # self.android.write("hello")
 
             self.msg_queue.put_nowait(setFormat(1, "1"))
 
+            # self.msg_queue.put_nowait(setFormat(8, "f090"))
+            #
+            # self.msg_queue.put_nowait(setFormat(8, "b090"))
 
+            # self.msg_queue.put_nowait(setFormat(8, "f099"))
 
-            self.msg_queue.put_nowait(setFormat(8, "t090"))
-            self.msg_queue.put_nowait(setFormat(8, "t090"))
-            self.msg_queue.put_nowait(setFormat(8, "t090"))
+            # Tasklist A5
+            # self.msg_queue.put_nowait(setFormat(1, "1"))
+            #
+            # self.msg_queue.put_nowait(setFormat(8, "f010"))
+            #
+            # self.msg_queue.put_nowait(setFormat(8, "u090"))
+            #
+            # self.msg_queue.put_nowait(setFormat(1, "1"))
+            #
+            # self.msg_queue.put_nowait(setFormat(8, "f014"))
+            #
+            # self.msg_queue.put_nowait(setFormat(8, "u090"))
+            #
+            # self.msg_queue.put_nowait(setFormat(1, "1"))
+            #
+            # self.msg_queue.put_nowait(setFormat(8, "f014"))
+            #
+            # self.msg_queue.put_nowait(setFormat(8, "u090"))
+            #
+            # self.msg_queue.put_nowait(setFormat(1, "1"))
             #
             # while(1):
             #     print("sfd")
             #     self.arduino.write("t,0xa5")
             #     input()
 
-            self.android.connect()
-            Process(target=self.read_android, args=(self.msg_queue,)).start()
-
             # Not to be run here, for testing only
             #     Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
 
-            # todo: set connect for init of connection
-            # self.pc.connect()
+            # self.android.write(str("TARGET-1-10"))
             #
-            Process(target=self.write_target, args=(self.msg_queue,)).start()
+            #
+
 
 
         except KeyboardInterrupt:
@@ -84,7 +105,7 @@ class MultiProcess:
 
         for i in range(10):
             self.image_rec.capture_frame()
-
+            time.sleep(0.5)
             # send to server
             jsondat = self.image_rec.send_data()
             # log.info("jsondat: " + str(jsondat))
@@ -107,7 +128,7 @@ class MultiProcess:
         #     'target': 4,
         #     'payload': "img|" + str(most_occurrence)+"|"+str(obstacle_id)
         # })
-        tosend = "img|" + str(most_occurrence) + "|" + str(obstacle_id)
+        tosend = "img|" + str(obstacle_id) + "|" + str(most_occurrence)
         # change to sync with stm
         return tosend
 
@@ -140,10 +161,6 @@ class MultiProcess:
 
                         msg_queue.put_nowait(str(tosend))
 
-                    # if msg in ['w1', 'a', 'd', 'h']:
-                    #     msg_queue.put_nowait(format_for('ARD', msg))
-                    # else:
-                    #     msg_queue.put_nowait(format_for('PC', msg))
 
             except Exception as e:
                 log.error('Android read failed: ' + str(e))
@@ -158,7 +175,16 @@ class MultiProcess:
 
                 payload = msg['payload']
 
+                # mirror all stm instructions to android
+                if msg['target'] == 8:
+                    if self.verbose:
+                        log.info("Sending to Android" + payload)
+                    self.android.write("move" + "|" + payload[0] + "|" + payload[1:])
                 if msg['target'] == 1:
+                    self.android.write("status|" + "1|" + str(payload))
+
+                if msg['target'] == 1:
+
                     if self.verbose:
                         log.info('Target Image:' + str(payload))
                         self.obstacle_id = str(payload)
@@ -167,19 +193,20 @@ class MultiProcess:
                     imagedata = self.read_image_recognition(self.obstacle_id)
 
                     # send to android
+                    # todo uncomment ltr 
                     self.android.write(str(imagedata))
                 if msg['target'] == 2:
                     if self.verbose:
                         log.info('Target Algo:' + str(payload))
 
-                        # todo: change this
                         # self.sendtoPc = [[105, 75, 180, 0], [135, 25, 0, 1], [195, 95, 180, 2], [175, 185, -90, 3],
                         #                  [75, 125, 90, 4], [15, 185, -90, 5]]
                     self.sendtoPc = payload
                     # self.sendtoPc = json.dumps(payload)
 
                     # process with 2 args, msg_queue and payload
-                    Process(target=self.read_write_pc, args=(self.sendtoPc, msg_queue)).start()
+                    # todo: comment this in
+                    # Process(target=self.read_write_pc, args=(self.sendtoPc, msg_queue)).start()
 
                 if msg['target'] == 4:
                     if self.verbose:
@@ -189,12 +216,13 @@ class MultiProcess:
                     if self.verbose:
                         log.info('Target Arduino:' + str(payload))
                     self.arduino.write(str(payload))
+                    time.sleep(7)
 
                 # ALgo and android target
                 # if msg['target'] == 6:
                 #     if self.verbose:
                 #         log.info('From Image:' + str(payload))
-                #     # todo: comment this in
+                #
                 #     # self.android.write(json.dumps(payload))
                 #
                 # # image and stm checking if its their turn
