@@ -30,7 +30,7 @@ class MultiProcess:
 
         try:
             self.arduino.connect()
-            # self.pc.connect()
+            self.pc.connect()
             self.android.connect()
             Process(target=self.read_android, args=(self.msg_queue,)).start()
             Process(target=self.read_arduino, args=(self.msg_queue,)).start()
@@ -38,7 +38,7 @@ class MultiProcess:
 
             # self.android.write("hello")
 
-            self.msg_queue.put_nowait(setFormat(1, "1"))
+            # self.msg_queue.put_nowait(setFormat(1, "1"))
 
             # self.msg_queue.put_nowait(setFormat(8, "f090"))
             #
@@ -114,8 +114,22 @@ class MultiProcess:
 
                 arrRec = json.loads(jsondat)
                 if len(arrRec[0]) > 0:
+                    largest_area = 0
+                    for u in arrRec:
+                        if u[2] > largest_area:
+                            largest_area = u[2]
+                    if self.verbose:
+                        print("Largest area: ")
+                        print(largest_area)
+
+                    new_list_with_items_in_largest_area = []
+                    for y in arrRec:
+                        if abs(y[2] - largest_area) <= 0.005:
+                            new_list_with_items_in_largest_area.append(y)
+
                     log.info("Image confidence full: " + str(arrRec))
-                    largest_value = max(arrRec, key=lambda x: x[1])
+                    log.info("Image confidence full with new list: " + str(new_list_with_items_in_largest_area))
+                    largest_value = max(new_list_with_items_in_largest_area, key=lambda x: x[2])
                     res = largest_value[0]
 
                     log.info("Largest value: " + str(largest_value))
@@ -128,11 +142,11 @@ class MultiProcess:
         #     'target': 4,
         #     'payload': "img|" + str(most_occurrence)+"|"+str(obstacle_id)
         # })
-        tosend = "img|" + str(obstacle_id) + "|" + str(most_occurrence)
+        tosend = "img|" + str(obstacle_id).strip() + "|" + str(most_occurrence)
+        if self.verbose:
+            log.info("FInal image" + str(tosend))
         # change to sync with stm
         return tosend
-
-        # msg_queue.put_nowait(tosend)
 
     def read_android(self, msg_queue):
         while True:
@@ -181,7 +195,7 @@ class MultiProcess:
                         log.info("Sending to Android" + payload)
                     self.android.write("move" + "|" + payload[0] + "|" + payload[1:])
                 if msg['target'] == 1:
-                    self.android.write("status|" + "1|" + str(payload))
+                    self.android.write("status|" + "1|" + str(payload).strip())
 
                 if msg['target'] == 1:
 
@@ -206,7 +220,7 @@ class MultiProcess:
 
                     # process with 2 args, msg_queue and payload
                     # todo: comment this in
-                    # Process(target=self.read_write_pc, args=(self.sendtoPc, msg_queue)).start()
+                    Process(target=self.read_write_pc, args=(self.sendtoPc, msg_queue)).start()
 
                 if msg['target'] == 4:
                     if self.verbose:
@@ -216,7 +230,7 @@ class MultiProcess:
                     if self.verbose:
                         log.info('Target Arduino:' + str(payload))
                     self.arduino.write(str(payload))
-                    time.sleep(7)
+                    time.sleep(4)
 
                 # ALgo and android target
                 # if msg['target'] == 6:
@@ -241,12 +255,12 @@ class MultiProcess:
             for i in data_recevied:
                 log.info("Pc line by line " + str(i))
 
-                # if i[0] == 's':
-                #     splitted = i.split(',')
-                #     msg_queue.put_nowait(setFormat('1', splitted[1]))
-                # else:
-                #     log.info(setFormat('8', i))
-                # msg_queue.put_nowait(setFormat('8', i))
+                if i[0] == 's':
+                    splitted = i.split(',')
+                    msg_queue.put_nowait(setFormat(1, splitted[1]))
+                else:
+                    log.info(setFormat(8, i))
+                    msg_queue.put_nowait(setFormat(8, i))
 
             # check if first 2 letters of string starts with sc
 
