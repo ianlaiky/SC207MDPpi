@@ -33,7 +33,7 @@ class MultiProcess:
             self.pc.connect()
             self.android.connect()
             Process(target=self.read_android, args=(self.msg_queue,)).start()
-            Process(target=self.read_arduino, args=(self.msg_queue,)).start()
+            # Process(target=self.read_arduino, args=(self.msg_queue,)).start()
             Process(target=self.write_target, args=(self.msg_queue,)).start()
 
             # self.android.write("hello")
@@ -87,14 +87,16 @@ class MultiProcess:
     def end(self):
         print("MultiProcess end")
 
-    def read_arduino(self, msg_queue):
+    # wait for done to continue
+    def read_arduino(self):
         while True:
             msg = self.arduino.read()
             if msg is not None and msg != "Connected":
                 if self.verbose:
                     log.info('Read Arduino: ' + str(msg))
-        # todo: image recognition is done in write_target
-        # msg_queue.put_nowait(format_for('PC', msg))
+                if "DONE" in str(msg).strip():
+                    log.info("EXectuing next command")
+                    return True
 
     def read_image_recognition(self, obstacle_id):
 
@@ -168,6 +170,10 @@ class MultiProcess:
 
                         msg_queue.put_nowait(str(tosend))
                     else:
+                        # tosend = json.dumps({
+                        #     'target': 8,
+                        #     'payload': msg
+                        # })
                         tosend = json.dumps({
                             'target': 2,
                             'payload': ast.literal_eval(msg)
@@ -230,7 +236,9 @@ class MultiProcess:
                     if self.verbose:
                         log.info('Target Arduino:' + str(payload))
                     self.arduino.write(str(payload))
-                    time.sleep(4)
+                    if self.read_arduino() is True:
+                        pass
+
 
                 # ALgo and android target
                 # if msg['target'] == 6:
