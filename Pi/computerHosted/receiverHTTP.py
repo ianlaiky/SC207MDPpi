@@ -2,7 +2,6 @@ import json
 
 from flask import Flask, request
 
-
 image_symbols_old = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'Boundary', 'C', 'D', 'E', 'F', 'G',
                      'H', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'down', 'left', 'right', 'stop', 'up']
 
@@ -55,7 +54,7 @@ def save_image():
             temp11 = []
             temp11.append(image_symbols[int(i)])
             temp11.append(temp2[index])
-            temp11.append(temp3[index][2]*temp3[index][3])
+            temp11.append(temp3[index][2] * temp3[index][3])
             class_data.append(temp11)
     if len(class_data) == 0:
         class_data.append([])
