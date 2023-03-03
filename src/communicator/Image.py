@@ -54,6 +54,8 @@ class Image:
         self.camera = cv2.VideoCapture(0)
         self.stream = io.BytesIO()
 
+        log.info("capturing frame")
+
         while True:
 
             # Read a frame from the camera

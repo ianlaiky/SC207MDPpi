@@ -49,6 +49,7 @@ def save_image():
         temp2 = list(i.boxes.conf.numpy().tolist())
         print("in boxes")
         temp3 = i.boxes.xywhn.numpy().tolist()
+        print(temp3)
         print("END")
         for index, i in enumerate(temp1):
             temp11 = []

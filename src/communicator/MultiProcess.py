@@ -40,7 +40,6 @@ class MultiProcess:
 
             # self.msg_queue.put_nowait(setFormat(1, "1"))
 
-            # self.msg_queue.put_nowait(setFormat(8, "f090"))
             #
             # self.msg_queue.put_nowait(setFormat(8, "b090"))
 
@@ -105,7 +104,7 @@ class MultiProcess:
         occurrence = []
         most_occurrence = None
 
-        for i in range(10):
+        for i in range(5):
             self.image_rec.capture_frame()
             time.sleep(0.5)
             # send to server
@@ -238,6 +237,7 @@ class MultiProcess:
                     self.arduino.write(str(payload))
                     if self.read_arduino() is True:
                         pass
+                    time.sleep(1)
 
 
                 # ALgo and android target
