@@ -237,7 +237,7 @@ class MultiProcess:
                     self.arduino.write(str(payload))
                     if self.read_arduino() is True:
                         pass
-                    time.sleep(1)
+                    # time.sleep(1)
 
 
                 # ALgo and android target
