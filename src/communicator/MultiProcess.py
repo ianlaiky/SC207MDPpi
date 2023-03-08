@@ -184,8 +184,10 @@ class MultiProcess:
             except Exception as e:
                 log.error('Android read failed: ' + str(e))
                 self.android.connect()
-    def write_android(self,msg):
-        time.sleep(0.5)
+
+    def write_android(self, msg):
+        time.sleep(1)
+        # self.android.write(str("\r\n"))
         self.android.write(str(msg))
 
     def write_target(self, msg_queue):
@@ -201,13 +203,13 @@ class MultiProcess:
                 if msg['target'] == 8:
                     if self.verbose:
                         log.info("Sending to Android" + payload)
-                    # self.android.write("move" + "|" + payload[0] + "|" + payload[1:])
-                    data_send = "move" + "|" + payload[0] + "|" + payload[1:]
-                    Process(target=self.write_android, args=(data_send,)).start()
+                    self.android.write("move" + "|" + payload[0] + "|" + payload[1:])
+                    # data_send = "move" + "|" + payload[0] + "|" + payload[1:]
+                    # Process(target=self.write_android, args=(data_send,)).start()
                 if msg['target'] == 1:
-                    # self.android.write("status|" + "1|" + str(payload).strip())
-                    data_send_status = "status|" + "1|" + str(payload).strip()
-                    Process(target=self.write_android, args=(data_send_status,)).start()
+                    self.android.write("status|" + "1|" + str(payload).strip())
+                    # data_send_status = "status|" + "1|" + str(payload).strip()
+                    # Process(target=self.write_android, args=(data_send_status,)).start()
 
                 if msg['target'] == 1:
 
@@ -220,9 +222,9 @@ class MultiProcess:
 
                     # send to android
                     # todo uncomment ltr 
-                    # self.android.write(str(imagedata)+str("&"))
-                    data_send_image = str(imagedata)+str("&")
-                    Process(target=self.write_android, args=(data_send_image,)).start()
+                    self.android.write(str(imagedata)+str("&"))
+                    # data_send_image = str(imagedata) + str("&")
+                    # Process(target=self.write_android, args=(data_send_image,)).start()
                 if msg['target'] == 2:
                     if self.verbose:
                         log.info('Target Algo:' + str(payload))
@@ -247,7 +249,6 @@ class MultiProcess:
                     if self.read_arduino() is True:
                         pass
                     # time.sleep(1)
-
 
                 # ALgo and android target
                 # if msg['target'] == 6:
