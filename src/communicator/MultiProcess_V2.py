@@ -104,7 +104,7 @@ class MultiProcess:
         occurrence = []
         most_occurrence = None
 
-        for i in range(5):
+        for i in range(1):
             self.image_rec.capture_frame()
             time.sleep(0.5)
             # send to server
@@ -143,7 +143,8 @@ class MultiProcess:
         #     'target': 4,
         #     'payload': "img|" + str(most_occurrence)+"|"+str(obstacle_id)
         # })
-        tosend = "img|" + str(obstacle_id).strip() + "|" + str(most_occurrence)
+        # tosend = "img|" + str(obstacle_id).strip() + "|" + str(most_occurrence)
+        tosend = most_occurrence
         if self.verbose:
             log.info("FInal image" + str(tosend))
         # change to sync with stm
@@ -161,24 +162,26 @@ class MultiProcess:
                         # log.info('Read Android: ' + str(type(msg)))
                         # log.info('Read Android: ' + str(list(msg)))
                     # todo: modify this
-                    if msg in ['f040', 'b040', 't090', 'u090', 'g090', 'j090']:
-                        tosend = json.dumps({
-                            'target': 8,
-                            'payload': msg
-                        })
-
-                        msg_queue.put_nowait(str(tosend))
-                    else:
-                        # tosend = json.dumps({
-                        #     'target': 8,
-                        #     'payload': msg
-                        # })
-                        tosend = json.dumps({
-                            'target': 2,
-                            'payload': ast.literal_eval(msg)
-                        })
-
-                        msg_queue.put_nowait(str(tosend))
+                    if msg == "Start":
+                        msg_queue.put_nowait(setFormat(1, "1"))
+                    # if msg in ['f040', 'b040', 't090', 'u090', 'g090', 'j090']:
+                    #     tosend = json.dumps({
+                    #         'target': 8,
+                    #         'payload': msg
+                    #     })
+                    #
+                    #     msg_queue.put_nowait(str(tosend))
+                    # else:
+                    #     # tosend = json.dumps({
+                    #     #     'target': 8,
+                    #     #     'payload': msg
+                    #     # })
+                    #     tosend = json.dumps({
+                    #         'target': 2,
+                    #         'payload': ast.literal_eval(msg)
+                    #     })
+                    #
+                    #     msg_queue.put_nowait(str(tosend))
 
 
             except Exception as e:
@@ -209,11 +212,18 @@ class MultiProcess:
                         self.obstacle_id = str(payload)
 
                     # Process(target=self.read_image_recognition, args=(self.msg_queue,self.obstacle_id)).start()
-                    imagedata = self.read_image_recognition(self.obstacle_id)
+                    while True:
+                        imagedata = self.read_image_recognition(self.obstacle_id)
+                        recimg = ""
+                        if str(imagedata) == str("39"):
+                            recimg = "t"
+                        elif str(imagedata) == str("38"):
+                            recimg = "u"
+                        self.arduino.write(str(recimg))
+                        self.android.write(str(recimg))
 
-                    # send to android
-                    # todo uncomment ltr 
-                    self.android.write(str(imagedata)+str("|"))
+                        time.sleep(1)
+
                 if msg['target'] == 2:
                     if self.verbose:
                         log.info('Target Algo:' + str(payload))
@@ -238,7 +248,6 @@ class MultiProcess:
                     if self.read_arduino() is True:
                         pass
                     # time.sleep(1)
-
 
                 # ALgo and android target
                 # if msg['target'] == 6:

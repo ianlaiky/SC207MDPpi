@@ -213,7 +213,7 @@ class MultiProcess:
 
                     # send to android
                     # todo uncomment ltr 
-                    self.android.write(str(imagedata)+str("|"))
+                    self.android.write(str(imagedata)+str("%"))
                 if msg['target'] == 2:
                     if self.verbose:
                         log.info('Target Algo:' + str(payload))
