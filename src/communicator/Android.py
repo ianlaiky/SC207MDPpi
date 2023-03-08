@@ -27,7 +27,7 @@ class Android:
             bluetooth.advertise_service(self.server_sock, "Server", service_id=UUID,
                                         service_classes=[UUID, bluetooth.SERIAL_PORT_CLASS],
                                         profiles=[bluetooth.SERIAL_PORT_PROFILE],
-                                        # protocols=[bluetooth.OBEX_UUID]
+                                        protocols=[bluetooth.OBEX_UUID]
                                         )
 
             log.info("Waiting for connection on RFCOMM channel " + str(port))
@@ -54,6 +54,7 @@ class Android:
             self.client_sock.send(message)
             log.info('Successfully wrote to Android: ' + str(message))
         except Exception as error:
+            log.info(error)
             raise
 
     def disconnect(self):
