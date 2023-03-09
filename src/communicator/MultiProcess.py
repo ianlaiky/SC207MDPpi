@@ -9,6 +9,8 @@ from src.communicator.Image import Image
 from src.communicator.utils import *
 import ast
 import time
+from src.config import T_FIRST_OFFSET, T_SECOND_OFFSET, U_FIRST_OFFSET, U_SECOND_OFFSET, G_FIRST_OFFSET, \
+    G_SECOND_OFFSET, J_FIRST_OFFSET, J_SECOND_OFFSET
 
 log = Logger()
 
@@ -222,7 +224,7 @@ class MultiProcess:
 
                     # send to android
                     # todo uncomment ltr 
-                    self.android.write(str(imagedata)+str("&"))
+                    self.android.write(str(imagedata) + str("&"))
                     # data_send_image = str(imagedata) + str("&")
                     # Process(target=self.write_android, args=(data_send_image,)).start()
                 if msg['target'] == 2:
@@ -245,6 +247,23 @@ class MultiProcess:
                 if msg['target'] == 8:
                     if self.verbose:
                         log.info('Target Arduino:' + str(payload))
+                    if str(payload)[0] == 't':
+                        self.arduino.write(str(T_FIRST_OFFSET))
+                        self.arduino.write(str(payload))
+                        self.arduino.write(str(T_SECOND_OFFSET))
+                    if str(payload)[0] == 'u':
+                        self.arduino.write(str(U_FIRST_OFFSET))
+                        self.arduino.write(str(payload))
+                        self.arduino.write(str(U_SECOND_OFFSET))
+                    if str(payload)[0] == 'g':
+                        self.arduino.write(str(G_FIRST_OFFSET))
+                        self.arduino.write(str(payload))
+                        self.arduino.write(str(G_SECOND_OFFSET))
+                    if str(payload)[0] == 'j':
+                        self.arduino.write(str(J_FIRST_OFFSET))
+                        self.arduino.write(str(payload))
+                        self.arduino.write(str(J_SECOND_OFFSET))
+
                     self.arduino.write(str(payload))
                     if self.read_arduino() is True:
                         pass
