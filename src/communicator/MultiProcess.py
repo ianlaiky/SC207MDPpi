@@ -94,9 +94,9 @@ class MultiProcess:
             msg = self.arduino.read()
             if msg is not None and msg != "Connected":
                 if self.verbose:
-                    log.info('Read Arduino: ' + str(msg))
-                if "DONE" in str(msg).strip():
-                    log.info("EXectuing next command")
+                    log.info('Read Arduino: ' + str(msg).strip())
+                if "FINISHED" in str(msg).strip():
+                    log.info("=========EXectuing next command=========")
                     return True
 
     def read_image_recognition(self, obstacle_id):
@@ -192,6 +192,16 @@ class MultiProcess:
         # self.android.write(str("\r\n"))
         self.android.write(str(msg))
 
+    def write_arduino_with_check(self, command):
+        # mirror all stm instructions to android
+        if self.verbose:
+            log.info("Sending to Android" + command)
+        if command != "":
+            self.arduino.write(str(command))
+            self.write_android("move" + "|" + str(command)[0] + "|" + str(command)[1:])
+            if self.read_arduino() is True:
+                pass
+
     def write_target(self, msg_queue):
 
         while True:
@@ -202,14 +212,14 @@ class MultiProcess:
                 payload = msg['payload']
 
                 # mirror all stm instructions to android
-                if msg['target'] == 8:
-                    if self.verbose:
-                        log.info("Sending to Android" + payload)
-                    self.android.write("move" + "|" + payload[0] + "|" + payload[1:])
-                    # data_send = "move" + "|" + payload[0] + "|" + payload[1:]
-                    # Process(target=self.write_android, args=(data_send,)).start()
+                # if msg['target'] == 8:
+                #     if self.verbose:
+                #         log.info("Sending to Android" + payload)
+                #     self.android.write("move" + "|" + payload[0] + "|" + payload[1:])
+                #     # data_send = "move" + "|" + payload[0] + "|" + payload[1:]
+                #     # Process(target=self.write_android, args=(data_send,)).start()
                 if msg['target'] == 1:
-                    self.android.write("status|" + "1|" + str(payload).strip())
+                    self.write_android("status|" + "1|" + str(payload).strip())
                     # data_send_status = "status|" + "1|" + str(payload).strip()
                     # Process(target=self.write_android, args=(data_send_status,)).start()
 
@@ -224,7 +234,7 @@ class MultiProcess:
 
                     # send to android
                     # todo uncomment ltr 
-                    self.android.write(str(imagedata) + str("&"))
+                    self.write_android(str(imagedata) + str("&"))
                     # data_send_image = str(imagedata) + str("&")
                     # Process(target=self.write_android, args=(data_send_image,)).start()
                 if msg['target'] == 2:
@@ -243,31 +253,34 @@ class MultiProcess:
                 if msg['target'] == 4:
                     if self.verbose:
                         log.info('Target Android:' + str(payload))
-                    self.android.write(str(payload))
+                    self.write_android(str(payload))
                 if msg['target'] == 8:
                     if self.verbose:
                         log.info('Target Arduino:' + str(payload))
                     if str(payload)[0] == 't':
-                        self.arduino.write(str(T_FIRST_OFFSET))
-                        self.arduino.write(str(payload))
-                        self.arduino.write(str(T_SECOND_OFFSET))
-                    if str(payload)[0] == 'u':
-                        self.arduino.write(str(U_FIRST_OFFSET))
-                        self.arduino.write(str(payload))
-                        self.arduino.write(str(U_SECOND_OFFSET))
-                    if str(payload)[0] == 'g':
-                        self.arduino.write(str(G_FIRST_OFFSET))
-                        self.arduino.write(str(payload))
-                        self.arduino.write(str(G_SECOND_OFFSET))
-                    if str(payload)[0] == 'j':
-                        self.arduino.write(str(J_FIRST_OFFSET))
-                        self.arduino.write(str(payload))
-                        self.arduino.write(str(J_SECOND_OFFSET))
 
-                    self.arduino.write(str(payload))
-                    if self.read_arduino() is True:
-                        pass
-                    # time.sleep(1)
+                        self.write_arduino_with_check(T_FIRST_OFFSET)
+                        self.write_arduino_with_check(payload)
+                        self.write_arduino_with_check(T_SECOND_OFFSET)
+
+                    elif str(payload)[0] == 'u':
+
+                        self.write_arduino_with_check(U_FIRST_OFFSET)
+                        self.write_arduino_with_check(payload)
+                        self.write_arduino_with_check(U_SECOND_OFFSET)
+                    elif str(payload)[0] == 'g':
+
+                        self.write_arduino_with_check(G_FIRST_OFFSET)
+                        self.write_arduino_with_check(payload)
+                        self.write_arduino_with_check(G_SECOND_OFFSET)
+                    elif str(payload)[0] == 'j':
+
+                        self.write_arduino_with_check(J_FIRST_OFFSET)
+                        self.write_arduino_with_check(payload)
+                        self.write_arduino_with_check(J_SECOND_OFFSET)
+                    else:
+
+                        self.write_arduino_with_check(payload)
 
                 # ALgo and android target
                 # if msg['target'] == 6:

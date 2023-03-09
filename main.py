@@ -14,6 +14,7 @@ def init():
     verbose = args.verbose
 
     # todo: enable on raspi
+    os.system("sudo killall -s 9 “sudo rfcomm watch hci0”")
     os.system("sudo hciconfig hci0 piscan")
 
     try:
