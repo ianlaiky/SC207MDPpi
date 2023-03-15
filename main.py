@@ -1,5 +1,5 @@
 import os
-from src.communicator.MultiProcess import MultiProcess
+from src.communicator.MultiProcess_V2 import MultiProcess
 import argparse
 from src.Logger import Logger
 
