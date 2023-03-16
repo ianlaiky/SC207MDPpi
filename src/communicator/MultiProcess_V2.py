@@ -8,6 +8,7 @@ from src.communicator.rpi_main import PC
 from src.communicator.Image import Image
 from src.communicator.utils import *
 import ast
+import os
 import time
 from src.config import T_FIRST_OFFSET, T_SECOND_OFFSET, U_FIRST_OFFSET, U_SECOND_OFFSET, G_FIRST_OFFSET, \
     G_SECOND_OFFSET, J_FIRST_OFFSET, J_SECOND_OFFSET
@@ -33,8 +34,8 @@ class MultiProcess:
         try:
             self.arduino.connect()
 
-            # self.android.connect()
-            # Process(target=self.read_android, args=(self.msg_queue,)).start()
+            self.android.connect()
+            Process(target=self.read_android, args=(self.msg_queue,)).start()
             # Process(target=self.read_arduino, args=(self.msg_queue,)).start()
             Process(target=self.write_target, args=(self.msg_queue,)).start()
 
@@ -104,8 +105,8 @@ class MultiProcess:
             # time.sleep(0.5)
             # send to server
             jsondat = self.image_rec.send_data()
-            # log.info("jsondat: " + str(jsondat))
-            print(jsondat)
+            log.info("jsondat: " + str(jsondat))
+            # print(jsondat)
             if jsondat is not None:
 
                 arrRec = json.loads(jsondat)
@@ -118,21 +119,19 @@ class MultiProcess:
                         print("Largest area: ")
                         print(largest_area)
 
-                    new_list_with_items_in_largest_area = []
-                    for y in arrRec:
-                        if abs(y[2] - largest_area) <= 0.005:
-                            new_list_with_items_in_largest_area.append(y)
-
                     log.info("Image confidence full: " + str(arrRec))
-                    log.info("Image confidence full with new list: " + str(new_list_with_items_in_largest_area))
-                    largest_value = max(new_list_with_items_in_largest_area, key=lambda x: x[2])
-                    res = largest_value[0]
 
-                    log.info("Largest value: " + str(largest_value))
-                    occurrence.append(res)
-            # time.sleep(1)
-        if occurrence:
-            most_occurrence = max(set(occurrence), key=occurrence.count)
+                    only_left_right = []
+                    for i in arrRec:
+                        if i[0] == "38" or i[0] == "39":
+                            only_left_right.append(i)
+                    log.info("LEFT RIGHT ONLY" + str(only_left_right))
+                    # largest_value = max(new_list_with_items_in_largest_area, key=lambda x: x[2])
+                    largest_conf_value = max(only_left_right, key=lambda x: x[1])
+                    most_occurrence = largest_conf_value[0]
+
+                    log.info("Largest value list: " + str(largest_conf_value))
+                    log.info("Largest value: " + str(most_occurrence))
 
         # tosend = json.dumps({
         #     'target': 4,
@@ -183,6 +182,8 @@ class MultiProcess:
 
             except Exception as e:
                 log.error('Android read failed: ' + str(e))
+               
+                self.android.disconnect()
                 self.android.connect()
 
     def write_android(self, msg):
@@ -241,10 +242,10 @@ class MultiProcess:
                 if msg['target'] == 1:
                     Process(target=self.image_loop, args=(self.msg_queue,)).start()
 
-                if msg['target'] == 4:
-                    if self.verbose:
-                        log.info('Target Android:' + str(payload))
-                    self.write_android(str(payload))
+                # if msg['target'] == 4:
+                #     if self.verbose:
+                #         log.info('Target Android:' + str(payload))
+                #     self.write_android(str(payload))
                 if msg['target'] == 8:
                     if self.verbose:
                         log.info('SENDING Target Arduino:' + str(payload))
