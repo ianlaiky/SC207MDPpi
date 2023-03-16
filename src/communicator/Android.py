@@ -1,3 +1,5 @@
+import socket
+
 import bluetooth
 from src.Logger import Logger
 from src.config import RFCOMM_CHANNEL
@@ -59,6 +61,8 @@ class Android:
 
     def disconnect(self):
         try:
+            self.client_sock.shutdown(socket.SHUT_RDWR)
+            self.server_sock.shutdown(socket.SHUT_RDWR)
             self.client_sock.close()
             self.server_sock.close()
             log.info("Disconnected Successfully")
