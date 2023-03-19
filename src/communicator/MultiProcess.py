@@ -38,48 +38,6 @@ class MultiProcess:
             # Process(target=self.read_arduino, args=(self.msg_queue,)).start()
             Process(target=self.write_target, args=(self.msg_queue,)).start()
 
-            # self.android.write("hello")
-
-            # self.msg_queue.put_nowait(setFormat(1, "1"))
-
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "b090"))
-
-            # self.msg_queue.put_nowait(setFormat(8, "f099"))
-
-            # Tasklist A5
-            # self.msg_queue.put_nowait(setFormat(1, "1"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "f010"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "u090"))
-            #
-            # self.msg_queue.put_nowait(setFormat(1, "1"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "f014"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "u090"))
-            #
-            # self.msg_queue.put_nowait(setFormat(1, "1"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "f014"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "u090"))
-            #
-            # self.msg_queue.put_nowait(setFormat(1, "1"))
-            #
-            # while(1):
-            #     print("sfd")
-            #     self.arduino.write("t,0xa5")
-            #     input()
-
-            # Not to be run here, for testing only
-            #     Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
-
-            # self.android.write(str("TARGET-1-10"))
-            #
-            #
-
 
 
         except KeyboardInterrupt:
@@ -312,19 +270,3 @@ class MultiProcess:
                     log.info(setFormat(8, i))
                     msg_queue.put_nowait(setFormat(8, i))
 
-            # check if first 2 letters of string starts with sc
-
-            # if msg[:2] == 'sc':
-            #     msg_queue.put_nowait(setFormat('1', msg))
-            # else:
-            #     msg_queue.put_nowait(setFormat('8', msg))
-
-            # if msg['target'] == 'android':
-            #     msg_queue.put_nowait(format_for('AND', msg['payload']))
-            # elif msg['target'] == 'arduino':
-            #     msg_queue.put_nowait(format_for('ARD', msg['payload']))
-            # elif msg['target'] == 'rpi':
-            #     img_queue.put_nowait(msg['payload'])
-            # elif msg['target'] == 'both':
-            #     msg_queue.put_nowait(format_for('AND', msg['payload']['android']))
-            #     msg_queue.put_nowait(format_for('ARD', msg['payload']['arduino']))
