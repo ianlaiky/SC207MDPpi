@@ -43,44 +43,6 @@ class MultiProcess:
 
             self.msg_queue.put_nowait(setFormat(1, "1"))
 
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "b090"))
-
-            # self.msg_queue.put_nowait(setFormat(8, "f099"))
-
-            # Tasklist A5
-            # self.msg_queue.put_nowait(setFormat(1, "1"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "f010"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "u090"))
-            #
-            # self.msg_queue.put_nowait(setFormat(1, "1"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "f014"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "u090"))
-            #
-            # self.msg_queue.put_nowait(setFormat(1, "1"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "f014"))
-            #
-            # self.msg_queue.put_nowait(setFormat(8, "u090"))
-            #
-            # self.msg_queue.put_nowait(setFormat(1, "1"))
-            #
-            # while(1):
-            #     print("sfd")
-            #     self.arduino.write("t,0xa5")
-            #     input()
-
-            # Not to be run here, for testing only
-            #     Process(target=self.read_image_recognition, args=(self.msg_queue,)).start()
-
-            # self.android.write(str("TARGET-1-10"))
-            #
-            #
-
 
 
         except KeyboardInterrupt:
@@ -133,10 +95,6 @@ class MultiProcess:
                     log.info("Largest value list: " + str(largest_conf_value))
                     log.info("Largest value: " + str(most_occurrence))
 
-        # tosend = json.dumps({
-        #     'target': 4,
-        #     'payload': "img|" + str(most_occurrence)+"|"+str(obstacle_id)
-        # })
         tosend = ''
         if str(most_occurrence) == "39":
             tosend = "t"
@@ -172,17 +130,13 @@ class MultiProcess:
                             'target': 8,
                             'payload': msg
                         })
-                        # tosend = json.dumps({
-                        #     'target': 2,
-                        #     'payload': ast.literal_eval(msg)
-                        # })
 
                         msg_queue.put_nowait(str(tosend))
 
 
             except Exception as e:
                 log.error('Android read failed: ' + str(e))
-               
+
                 self.android.disconnect()
                 self.android.connect()
 
@@ -227,100 +181,10 @@ class MultiProcess:
 
                 payload = msg['payload']
 
-                # mirror all stm instructions to android
-                # if msg['target'] == 8:
-                #     if self.verbose:
-                #         log.info("Sending to Android" + payload)
-                #     self.android.write("move" + "|" + payload[0] + "|" + payload[1:])
-                #     # data_send = "move" + "|" + payload[0] + "|" + payload[1:]
-                #     # Process(target=self.write_android, args=(data_send,)).start()
-                # if msg['target'] == 1:
-                #     self.write_android("status|" + "1|" + str(payload).strip())
-                #     # data_send_status = "status|" + "1|" + str(payload).strip()
-                #     # Process(target=self.write_android, args=(data_send_status,)).start()
-                # log.info('ASKJDGHAJSGDJASGDHJSghj')
                 if msg['target'] == 1:
                     Process(target=self.image_loop, args=(self.msg_queue,)).start()
 
-                # if msg['target'] == 4:
-                #     if self.verbose:
-                #         log.info('Target Android:' + str(payload))
-                #     self.write_android(str(payload))
                 if msg['target'] == 8:
                     if self.verbose:
                         log.info('SENDING Target Arduino:' + str(payload))
                     self.write_arduino_with_check(payload)
-                    # if len(str(payload)) > 1:
-                    #     if str(payload)[0] == 't':
-                    #
-                    #         self.write_arduino_with_check(T_FIRST_OFFSET)
-                    #         self.write_arduino_with_check(payload)
-                    #         self.write_arduino_with_check(T_SECOND_OFFSET)
-                    #
-                    #     elif str(payload)[0] == 'u':
-                    #
-                    #         self.write_arduino_with_check(U_FIRST_OFFSET)
-                    #         self.write_arduino_with_check(payload)
-                    #         self.write_arduino_with_check(U_SECOND_OFFSET)
-                    #     elif str(payload)[0] == 'g':
-                    #
-                    #         self.write_arduino_with_check(G_FIRST_OFFSET)
-                    #         self.write_arduino_with_check(payload)
-                    #         self.write_arduino_with_check(G_SECOND_OFFSET)
-                    #     elif str(payload)[0] == 'j':
-                    #
-                    #         self.write_arduino_with_check(J_FIRST_OFFSET)
-                    #         self.write_arduino_with_check(payload)
-                    #         self.write_arduino_with_check(J_SECOND_OFFSET)
-                    #     else:
-                    #
-                    #         self.write_arduino_with_check(payload)
-                    # else:
-                    #     self.write_arduino_with_check(payload)
-
-                # ALgo and android target
-                # if msg['target'] == 6:
-                #     if self.verbose:
-                #         log.info('From Image:' + str(payload))
-                #
-                #     # self.android.write(json.dumps(payload))
-                #
-                # # image and stm checking if its their turn
-                # if msg['target'] == 9:
-                #     if self.verbose:
-                #         log.info('Process From Algo:' + str(payload))
-
-    # def read_write_pc(self, data, msg_queue):
-    #     # while True:
-    #     msg = self.pc.send_receive_data(data)
-    #     if msg is not None:
-    #         if self.verbose:
-    #             log.info('Read PC: ' + str(msg))
-    # 
-    #         data_recevied = list(msg)
-    #         for i in data_recevied:
-    #             log.info("Pc line by line " + str(i))
-    # 
-    #             if i[0] == 's':
-    #                 splitted = i.split(',')
-    #                 msg_queue.put_nowait(setFormat(1, splitted[1]))
-    #             else:
-    #                 log.info(setFormat(8, i))
-    #                 msg_queue.put_nowait(setFormat(8, i))
-
-    # check if first 2 letters of string starts with sc
-
-    # if msg[:2] == 'sc':
-    #     msg_queue.put_nowait(setFormat('1', msg))
-    # else:
-    #     msg_queue.put_nowait(setFormat('8', msg))
-
-    # if msg['target'] == 'android':
-    #     msg_queue.put_nowait(format_for('AND', msg['payload']))
-    # elif msg['target'] == 'arduino':
-    #     msg_queue.put_nowait(format_for('ARD', msg['payload']))
-    # elif msg['target'] == 'rpi':
-    #     img_queue.put_nowait(msg['payload'])
-    # elif msg['target'] == 'both':
-    #     msg_queue.put_nowait(format_for('AND', msg['payload']['android']))
-    #     msg_queue.put_nowait(format_for('ARD', msg['payload']['arduino']))
